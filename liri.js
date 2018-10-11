@@ -1,12 +1,13 @@
 const request = require("request");
 const Spotify = require("node-spotify-api");
 const moment = require("moment");
+const fs = require("fs");
 
 require("dotenv").config();
 
 const spotifyKeys = require("./keys.js");
 
-const nodeCommand = process.argv[2];
+let nodeCommand = process.argv[2];
 const nodeArgs = process.argv;
 let name = "";
 
@@ -38,7 +39,7 @@ function bandsInTown() {
         ================================================================
         Venue Name: ${result[i].venue.name}
         Location: ${result[i].venue.city}, ${result[i].venue.region}, ${result[i].venue.country}
-        Event Date: ${result[i].datetime}
+        Event Date: ${moment(result[i].datetime, "YYYY-MM-DDTHH:mm:ss").format("HH:mm MMMM Do YYYY")}
         ================================================================`)
       }
     };
@@ -47,9 +48,37 @@ function bandsInTown() {
 
 
 // spotify-this-song <song name>
+function spotifyThis() {
+  getName();
+
+  if (nodeArgs.length < 4) {
+    name = "The+Sign";
+  }
+
+  spotify.search({
+    type: 'track',
+    query: name,
+    limit: 5
+  }, function (err, data) {
+    if (err) {
+      return console.log('Error occurred: ' + err);
+    };
+    const result = data.tracks.items;
+
+    for (let i = 0; i < result.length; i++) {
+      console.log(`
+      ================================================================
+      Artists: ${result[i].artists[0].name}
+      Song Name: ${result[i].name}
+      Preview Link: ${result[i].external_urls.spotify}
+      Album: ${result[i].album.name}
+      ================================================================`)
+    }
+  });
+};
 
 
-// movie-this <movie-name>
+// movie-this <movie-this>
 function movie() {
   getName();
 
@@ -77,12 +106,44 @@ function movie() {
   });
 };
 
+// do-what-it-says command
+function random() {
+  fs.readFile("random.txt", "utf8", function(err, data) {
+    if (err) {
+      return console.log(err);
+    }
+
+    data = data.split(",");
+
+    process.argv[3] = data[1];
+
+    nodeCommand = data[0];
+
+    switch (nodeCommand) {
+      case "concert-this":
+        bandsInTown();
+        break;
+      case "spotify-this-song":
+        spotifyThis();
+        break;
+      case "movie-name":
+        movie();
+        break;
+    };
+  });
+};
+
 switch (nodeCommand) {
   case "concert-this":
     bandsInTown();
     break;
-  case "movie-name":
+  case "spotify-this-song":
+    spotifyThis();
+    break;
+  case "movie-this":
     movie();
     break;
-
+  case "do-what-it-says":
+    random();
+    break;
 };
