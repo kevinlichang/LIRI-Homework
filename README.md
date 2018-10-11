@@ -17,4 +17,4 @@ By inputting on the terminal the following:
 
 LIRI will return all results of possible concert events, the venues, and dates
 
-![alt text](https://raw.githubusercontent.com/kevinlichang/LIRI-Homework/master/images/concert-this.PNG)
+![concert-this](images/concert-this.png)
